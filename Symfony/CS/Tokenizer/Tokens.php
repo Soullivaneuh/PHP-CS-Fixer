@@ -566,6 +566,51 @@ class Tokens extends \SplFixedArray
     }
 
     /**
+     * Get indexes of method declaration.
+     *
+     * Returned methods sample:
+     *     function name()
+     *     public function name()
+     *     protected function name()
+     *     private function name()
+     *     public final function name()
+     *     protected final function name()
+     *     public abstract function name();
+     *     protected abstract function name();
+     *
+     * @param bool $perClass Returns methods per classes
+     *
+     * @return int[]|array[int[]]
+     */
+    public function getMethodDeclarationIndexes($perClass = false)
+    {
+        $this->rewind();
+
+        $methods = array();
+        $insideClass = false;
+        $classIndex = 0;
+
+        for ($index = 0, $limit = $this->count(); $index < $limit; ++$index) {
+            $token = $this[$index];
+
+            if ($token->isGivenKind(T_CLASS)) {
+                $insideClass = true;
+                $classIndex = null === $classIndex ? 0 : ++$classIndex;
+            }
+
+            if (!$insideClass || !$token->isGivenKind(T_FUNCTION)) {
+                continue;
+            }
+
+            var_dump($token->getContent());
+
+            $methods[$classIndex][] = $index;
+        }
+
+        return $methods;
+    }
+
+    /**
      * Get index for closest next token which is non whitespace.
      *
      * This method is shorthand for getNonWhitespaceSibling method.
